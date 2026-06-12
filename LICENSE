@@ -1,0 +1,120 @@
+PROPRIETARY SOFTWARE LICENSE AGREEMENT
+
+Copyright (c) 2025-2026 Ayshi Shannidhya Panda. All rights reserved.
+
+NOTICE TO USER: PLEASE READ THIS LICENSE AGREEMENT CAREFULLY. BY USING,
+COPYING, OR DISTRIBUTING THIS SOFTWARE, YOU ACKNOWLEDGE THAT YOU HAVE READ,
+UNDERSTOOD, AND AGREE TO BE BOUND BY THE TERMS AND CONDITIONS OF THIS
+AGREEMENT.
+
+1. DEFINITIONS
+
+   "Software" refers to the Neptune Bank Online Banking System source code,
+   documentation, configuration files, build scripts, and all associated
+   materials contained in this repository.
+
+   "Author" refers to Ayshi Shannidhya Panda, the original creator and sole
+   copyright holder of the Software.
+
+   "Licensee" refers to any individual or organization that has been granted
+   access to the Software by the Author.
+
+2. GRANT OF LICENSE
+
+   Subject to the terms and conditions of this Agreement, the Author grants
+   the Licensee a non-exclusive, non-transferable, revocable license to:
+
+   a) View and review the Software for evaluation and reference purposes.
+   b) Use the Software internally within the Licensee's organization solely
+      for the purposes agreed upon between the Author and the Licensee.
+
+3. RESTRICTIONS
+
+   The Licensee SHALL NOT, without the prior written consent of the Author:
+
+   a) Copy, reproduce, or duplicate the Software or any portion thereof,
+      except for reasonable backup purposes.
+   b) Modify, adapt, translate, reverse engineer, decompile, disassemble,
+      or create derivative works based on the Software.
+   c) Distribute, sublicense, lease, rent, sell, or otherwise transfer the
+      Software or any rights therein to any third party.
+   d) Remove, alter, or obscure any copyright notices, proprietary legends,
+      or confidentiality markings on or in the Software.
+   e) Use the Software for any commercial purpose, including but not limited
+      to resale, SaaS offerings, or integration into commercial products,
+      without a separate commercial license agreement with the Author.
+   f) Claim authorship or ownership of the Software or any portion thereof.
+   g) Use the Software to compete with the Author or the Author's interests.
+
+4. INTELLECTUAL PROPERTY
+
+   a) The Software is the original work of the Author. All intellectual
+      property rights, including but not limited to copyrights, patents,
+      trade secrets, and trademarks, in and to the Software remain the
+      exclusive property of the Author.
+   b) This Agreement does not transfer any ownership rights to the Licensee.
+   c) Any feedback, suggestions, or improvements communicated to the Author
+      regarding the Software shall become the property of the Author.
+
+5. CONFIDENTIALITY
+
+   a) The Licensee acknowledges that the Software contains confidential and
+      proprietary information of the Author.
+   b) The Licensee agrees to maintain the confidentiality of the Software
+      and shall not disclose it to any third party without the Author's
+      prior written consent.
+   c) The Licensee shall take all reasonable measures to protect the
+      Software from unauthorized access, use, or disclosure.
+
+6. NO WARRANTY
+
+   THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT.
+   THE AUTHOR SHALL NOT BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
+   LIABILITY ARISING FROM THE USE OF THE SOFTWARE.
+
+7. LIMITATION OF LIABILITY
+
+   IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY INDIRECT, INCIDENTAL,
+   SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, REGARDLESS OF THE CAUSE
+   OF ACTION OR THE THEORY OF LIABILITY, EVEN IF THE AUTHOR HAS BEEN
+   ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+8. TERMINATION
+
+   a) This license is effective until terminated.
+   b) The Author may terminate this license at any time by providing
+      written notice to the Licensee.
+   c) This license will automatically terminate if the Licensee breaches
+      any term of this Agreement.
+   d) Upon termination, the Licensee must immediately cease all use of
+      the Software and destroy all copies in their possession.
+
+9. ATTRIBUTION
+
+   Any permitted use of the Software must include the following attribution:
+
+      "Neptune Bank - Online Banking System"
+      "Copyright (c) 2025-2026 Ayshi Shannidhya Panda. All rights reserved."
+
+10. GOVERNING LAW
+
+    This Agreement shall be governed by and construed in accordance with the
+    laws of India. Any disputes arising under this Agreement shall be subject
+    to the exclusive jurisdiction of the courts located in India.
+
+11. ENTIRE AGREEMENT
+
+    This Agreement constitutes the entire agreement between the parties
+    concerning the subject matter hereof and supersedes all prior or
+    contemporaneous agreements, representations, warranties, and
+    understandings.
+
+---
+
+For licensing inquiries, commercial use requests, or permissions, contact:
+
+   Ayshi Shannidhya Panda
+   Email: a.shannidhya@gmail.com
+   GitHub: https://github.com/ayshishannidhya

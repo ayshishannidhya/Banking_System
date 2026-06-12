@@ -1,0 +1,1002 @@
+\documentclass[12pt,a4paper]{report}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\usepackage{float}
+\usepackage{caption}
+
+\definecolor{neptuneblue}{RGB}{15, 76, 129}
+\definecolor{codebg}{RGB}{245, 245, 250}
+\definecolor{codegreen}{RGB}{0, 128, 0}
+\definecolor{codegray}{RGB}{128, 128, 128}
+\definecolor{codestring}{RGB}{163, 21, 21}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=neptuneblue,
+    urlcolor=neptuneblue,
+    citecolor=neptuneblue,
+    pdftitle={Neptune Bank - Online Banking System Documentation},
+    pdfauthor={Ayshi Shannidhya Panda}
+}
+
+\lstdefinestyle{javastyle}{
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\footnotesize,
+    keywordstyle=\color{neptuneblue}\bfseries,
+    stringstyle=\color{codestring},
+    commentstyle=\color{codegray}\itshape,
+    numberstyle=\tiny\color{codegray},
+    breaklines=true,
+    frame=single,
+    rulecolor=\color{codegray!40},
+    numbers=left,
+    numbersep=8pt,
+    tabsize=4,
+    showstringspaces=false,
+    captionpos=b
+}
+
+\lstdefinestyle{propstyle}{
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\footnotesize,
+    breaklines=true,
+    frame=single,
+    rulecolor=\color{codegray!40},
+    showstringspaces=false,
+    captionpos=b
+}
+
+\lstdefinestyle{jsonstyle}{
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\footnotesize,
+    breaklines=true,
+    frame=single,
+    rulecolor=\color{codegray!40},
+    showstringspaces=false,
+    captionpos=b
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\textcolor{neptuneblue}{\textbf{Neptune Bank}}}
+\fancyhead[R]{\textcolor{neptuneblue}{\nouppercase{\leftmark}}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.5pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{neptuneblue}\leaders\hrule height \headrulewidth\hfill}}
+
+\titleformat{\chapter}[display]
+{\normalfont\huge\bfseries\color{neptuneblue}}
+{\chaptertitlename\ \thechapter}{20pt}{\Huge}
+
+\titleformat{\section}
+{\normalfont\Large\bfseries\color{neptuneblue}}
+{\thesection}{1em}{}
+
+\titleformat{\subsection}
+{\normalfont\large\bfseries\color{neptuneblue!80}}
+{\thesubsection}{1em}{}
+
+\newtcolorbox{infobox}[1][]{
+    colback=neptuneblue!5,
+    colframe=neptuneblue!75,
+    fonttitle=\bfseries,
+    title=#1,
+    arc=3pt,
+    boxrule=0.5pt
+}
+
+\newtcolorbox{warnbox}[1][]{
+    colback=red!5,
+    colframe=red!75,
+    fonttitle=\bfseries,
+    title=#1,
+    arc=3pt,
+    boxrule=0.5pt
+}
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    \vspace*{2cm}
+    {\Huge\bfseries\textcolor{neptuneblue}{Neptune Bank}\par}
+    \vspace{0.5cm}
+    {\LARGE\textcolor{neptuneblue!70}{Online Banking System}\par}
+    \vspace{1cm}
+    {\Large Technical Documentation\par}
+    \vspace{2cm}
+    \rule{\textwidth}{1pt}
+    \vspace{0.5cm}
+    {\large
+    \begin{tabular}{rl}
+        \textbf{Project:} & Neptune Bank -- Online Banking System \\
+        \textbf{Author:} & Ayshi Shannidhya Panda \\
+        \textbf{Technology:} & Spring Boot 3.5 Microservices \\
+        \textbf{Language:} & Java 21 \\
+        \textbf{Database:} & PostgreSQL \\
+        \textbf{Messaging:} & RabbitMQ \\
+        \textbf{Repository:} & \url{https://github.com/ayshishannidhya/Banking_System} \\
+        \textbf{Date:} & June 2026 \\
+    \end{tabular}
+    }
+    \vspace{0.5cm}
+    \rule{\textwidth}{1pt}
+    \vfill
+    {\large Secure Online Banking System with Account Management,\\Transaction History, and Fund Transfers\par}
+    \vspace{1cm}
+    {\footnotesize\textcolor{gray}{\textcopyright\ 2025--2026 Ayshi Shannidhya Panda. All rights reserved.\\This document and the associated source code are proprietary and confidential.\\Unauthorized reproduction, distribution, or use is strictly prohibited.}}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+\chapter{Introduction}
+
+\section{Project Overview}
+Neptune Bank is a secure online banking system built using a microservices architecture with Spring Boot 3.5.5 and Java 21. The system provides comprehensive banking functionality including user registration with KYC verification, account management, real-time fund transfers, transaction history tracking, and OTP-based multi-channel authentication.
+
+The system is designed with security as a first-class concern, employing RSA-based JWT authentication, BCrypt password hashing, and role-based access control across all services.
+
+\section{Key Features}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{User Management}: Complete user registration with KYC document upload (Aadhaar, PAN, photo, signature), profile management with CRUD operations, and soft-delete capability.
+    \item \textbf{Account Management}: Multi-type account creation (Savings, Current, Fixed Deposit), branch-based account association, balance management with optimistic locking.
+    \item \textbf{Fund Transfers}: Secure inter-account fund transfers with RabbitMQ-based asynchronous debit/credit operations, automatic rollback on failure, and comprehensive transaction tracking.
+    \item \textbf{Transaction History}: Complete transaction audit trail with filtering by account, chronological ordering, and detailed transaction metadata.
+    \item \textbf{OTP Authentication}: Multi-channel OTP delivery via SMS (TextBee API) and Email (SMTP), with expiry management and verification tracking.
+    \item \textbf{Security}: RSA-256 JWT tokens, BCrypt password hashing, role-based authorization (ADMIN, USER, EMPLOYEE), and Spring Security filter chains.
+\end{itemize}
+
+\section{Technology Stack}
+
+\begin{table}[H]
+\centering
+\caption{Technology Stack}
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+\textbf{Component} & \textbf{Technology} \\
+\midrule
+Language & Java 21 (LTS) \\
+Framework & Spring Boot 3.5.5 \\
+Build Tool & Gradle (Groovy DSL) \\
+Database & PostgreSQL 16 \\
+ORM & Spring Data JPA / Hibernate \\
+Messaging & RabbitMQ with Spring AMQP \\
+Authentication & JWT (RS256) with Spring Security \\
+Password Hashing & BCrypt (Spring Security Crypto) \\
+API Documentation & RESTful JSON APIs \\
+Service Discovery & Spring Cloud Netflix Eureka (optional) \\
+SMS Gateway & TextBee API \\
+Email & Spring Mail (Gmail SMTP) \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\chapter{System Architecture}
+
+\section{Microservices Overview}
+The Neptune Bank system consists of five independent microservices, each with its own database, running on separate ports.
+
+\begin{table}[H]
+\centering
+\caption{Microservices Port Configuration}
+\begin{tabularx}{\textwidth}{llcX}
+\toprule
+\textbf{Service} & \textbf{Port} & \textbf{Database} & \textbf{Responsibility} \\
+\midrule
+user-service & 8080 & UserDB & User registration, profile CRUD, KYC \\
+otp-service & 8082 & OtpDB & OTP generation, delivery, verification \\
+account-service & 8083 & AccountDB & Accounts, branches, balances \\
+transaction-service & 8084 & TransactionDB & Transactions, fund transfers \\
+auth-service & 8086 & AuthDB & Authentication, JWT, authorization \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Inter-Service Communication}
+Services communicate asynchronously using RabbitMQ for operations that require cross-service data validation and state changes.
+
+\begin{infobox}[Communication Patterns]
+\begin{itemize}[leftmargin=*]
+    \item \textbf{account-service $\rightarrow$ user-service}: User validation during account creation via RabbitMQ RPC (request/reply pattern).
+    \item \textbf{transaction-service $\rightarrow$ account-service}: Account validation, debit, and credit operations during fund transfers via three dedicated RabbitMQ queues.
+\end{itemize}
+\end{infobox}
+
+\subsection{RabbitMQ Queue Architecture}
+
+\begin{table}[H]
+\centering
+\caption{RabbitMQ Queues}
+\begin{tabularx}{\textwidth}{lllX}
+\toprule
+\textbf{Queue} & \textbf{Producer} & \textbf{Consumer} & \textbf{Purpose} \\
+\midrule
+user-validation-queue & account-service & user-service & Validate user exists \\
+account-validation-queue & transaction-service & account-service & Validate account exists \\
+account-debit-queue & transaction-service & account-service & Debit source account \\
+account-credit-queue & transaction-service & account-service & Credit destination account \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Security Architecture}
+
+\subsection{Authentication Flow}
+\begin{enumerate}
+    \item Client sends credentials to \texttt{POST /auth/login} on auth-service.
+    \item Auth-service validates credentials using BCrypt comparison.
+    \item On success, auth-service generates an RS256 JWT token signed with the private key.
+    \item Client includes the JWT in the \texttt{Authorization: Bearer <token>} header for subsequent requests.
+    \item Each service validates the token using the corresponding RSA public key.
+\end{enumerate}
+
+\subsection{JWT Token Structure}
+\begin{lstlisting}[style=jsonstyle, caption={JWT Claims}]
+{
+    "sub": "username",
+    "role": "ADMIN | USER | EMPLOYEE",
+    "iat": 1718150400,
+    "exp": 1718161200
+}
+\end{lstlisting}
+
+The token is signed with RS256 (RSA + SHA-256) using a private key (\texttt{private.pem}) and validated with the corresponding public key (\texttt{public.pem}). Token expiry is set to 3 hours.
+
+\subsection{Password Security}
+All user passwords are hashed using \texttt{BCryptPasswordEncoder} before storage. The BCrypt algorithm uses a cost factor of 10 (default), generating unique salts for each password. Plaintext passwords are never stored or logged.
+
+\subsection{Role-Based Access Control}
+\begin{table}[H]
+\centering
+\caption{User Roles}
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+\textbf{Role} & \textbf{Permissions} \\
+\midrule
+ADMIN & Full access: create/modify accounts, change branches, adjust balances, manage users \\
+USER & Limited access: view own accounts, initiate transfers, view transaction history \\
+EMPLOYEE & Intermediate access: verify KYC documents, manage customer accounts \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\chapter{Service Specifications}
+
+\section{Auth Service (Port 8086)}
+
+\subsection{Purpose}
+Handles user authentication, JWT token generation and validation, and user credential management with BCrypt password hashing.
+
+\subsection{Data Model}
+
+\begin{table}[H]
+\centering
+\caption{Users Entity (auth-service)}
+\begin{tabularx}{\textwidth}{llX}
+\toprule
+\textbf{Field} & \textbf{Type} & \textbf{Description} \\
+\midrule
+id & Long & Auto-generated primary key \\
+username & String & Unique login identifier \\
+password & String & BCrypt-hashed password \\
+role & Role (Enum) & ADMIN, USER, or EMPLOYEE \\
+isAccountNonExpired & Boolean & Account expiry flag (default: true) \\
+isAccountNonLocked & Boolean & Account lock flag (default: true) \\
+isCredentialsNonExpired & Boolean & Credential expiry flag (default: true) \\
+isEnabled & Boolean & Account enabled flag (default: true) \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{API Endpoints}
+
+\begin{table}[H]
+\centering
+\caption{Auth Service Endpoints}
+\begin{tabularx}{\textwidth}{llXl}
+\toprule
+\textbf{Method} & \textbf{Path} & \textbf{Description} & \textbf{Auth} \\
+\midrule
+POST & /auth/login & Authenticate and get JWT token & No \\
+POST & /auth/add-user & Register new auth credentials & No \\
+GET & /auth/validate & Validate JWT token & No \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection{POST /auth/login}
+\begin{lstlisting}[style=jsonstyle, caption={Login Request}]
+{
+    "username": "john_doe",
+    "password": "securePassword123",
+    "mode": "jwt"
+}
+\end{lstlisting}
+
+\begin{lstlisting}[style=jsonstyle, caption={Login Response (Success)}]
+{
+    "message": "Login successful",
+    "username": "john_doe",
+    "role": "USER",
+    "token": "eyJhbGciOiJSUzI1NiJ9...",
+    "status": "success",
+    "code": "200"
+}
+\end{lstlisting}
+
+The \texttt{mode} field supports two values:
+\begin{itemize}
+    \item \texttt{jwt}: Returns a JWT token for stateless authentication.
+    \item \texttt{session}: Creates a server-side HTTP session (30-minute timeout).
+\end{itemize}
+
+\subsubsection{POST /auth/add-user}
+\begin{lstlisting}[style=jsonstyle, caption={Register Request}]
+{
+    "username": "john_doe",
+    "password": "securePassword123",
+    "role": "USER"
+}
+\end{lstlisting}
+
+The password is automatically hashed with BCrypt before storage. Duplicate usernames return a 409 Conflict response.
+
+\section{User Service (Port 8080)}
+
+\subsection{Purpose}
+Manages user profiles, contact information, nominee details, and KYC document storage with full CRUD capabilities.
+
+\subsection{Data Model}
+
+\begin{table}[H]
+\centering
+\caption{Users Entity (user-service)}
+\begin{tabularx}{\textwidth}{llX}
+\toprule
+\textbf{Field} & \textbf{Type} & \textbf{Description} \\
+\midrule
+userid & Long & Auto-generated primary key \\
+firstName & String & User's first name \\
+middleName & String & User's middle name \\
+lastName & String & User's last name \\
+dateOfBirth & LocalDate & Date of birth \\
+gender & Genders (Enum) & MALE, FEMALE, OTHER \\
+fatherName & String & Father's name \\
+motherName & String & Mother's name \\
+maritalStatus & MaritalStatus & MARRIED, UNMARRIED, DIVORCED, WIDOWED \\
+spouseName & String & Spouse name (required if married) \\
+occupation & Occupation (Enum) & Employment type \\
+salary & String & Monthly salary \\
+citizen & String & Citizenship country \\
+category & Category (Enum) & GENERAL, OBC, SC, ST \\
+religion & Religion (Enum) & Religious affiliation \\
+contactDetails & ContactDetails & One-to-one relationship \\
+nominee & NomineeDetails & One-to-one relationship \\
+kycId & Kyc & One-to-one KYC documents \\
+accountId & Long & Linked account (set via messaging) \\
+isActive & Boolean & Active status flag \\
+isBlocked & Boolean & Block status flag \\
+isDeleted & Boolean & Soft-delete flag \\
+createdAt & LocalDateTime & Creation timestamp \\
+updatedAt & LocalDateTime & Last update timestamp \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection{ContactDetails Entity}
+Stores phone numbers, email addresses, physical addresses (communication and permanent), city, state, zip, landmark, and country.
+
+\subsubsection{NomineeDetails Entity}
+Stores nominee name, relationship, date of birth, mobile number, email, Aadhaar number, PAN number, and address.
+
+\subsubsection{KYC Entity}
+Stores identity document numbers and scanned images (as \texttt{BYTEA} in PostgreSQL):
+\begin{itemize}
+    \item Aadhaar card (number + image, mandatory)
+    \item PAN card (number + image, mandatory)
+    \item User photo (mandatory)
+    \item User signature (mandatory)
+    \item Voter ID (optional)
+    \item Passport (optional)
+    \item Driving License (optional)
+\end{itemize}
+Each document has a verification status flag and can be verified by an employee.
+
+\subsection{API Endpoints}
+
+\begin{table}[H]
+\centering
+\caption{User Service Endpoints}
+\begin{tabularx}{\textwidth}{llXl}
+\toprule
+\textbf{Method} & \textbf{Path} & \textbf{Description} & \textbf{Auth} \\
+\midrule
+POST & /auth/user & Register user (multipart) & No \\
+GET & /auth/user/\{id\} & Get user by ID & Yes \\
+GET & /auth/users & Get all active users & Yes \\
+PUT & /auth/user/\{id\} & Update user details & Yes \\
+DELETE & /auth/user/\{id\} & Soft-delete user & Yes \\
+GET & /auth/user/exists/\{id\} & Check user existence & Yes \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection{POST /auth/user (Registration)}
+This endpoint accepts \texttt{multipart/form-data} with the following parts:
+
+\begin{table}[H]
+\centering
+\caption{Registration Multipart Parts}
+\begin{tabularx}{\textwidth}{llcX}
+\toprule
+\textbf{Part Name} & \textbf{Type} & \textbf{Required} & \textbf{Description} \\
+\midrule
+user & JSON & Yes & UsersRequestDTO with all user details \\
+aadhaar & File & Yes & Scanned Aadhaar card image \\
+pan & File & Yes & Scanned PAN card image \\
+photo & File & Yes & User photograph \\
+signature & File & Yes & User signature scan \\
+voter & File & No & Voter ID image \\
+passport & File & No & Passport image \\
+driving & File & No & Driving license image \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection{PUT /auth/user/\{id\} (Partial Update)}
+Supports partial updates --- only non-null fields in the request body are updated. Contact details can also be partially updated within the same request.
+
+\subsubsection{DELETE /auth/user/\{id\} (Soft Delete)}
+Sets \texttt{isDeleted = true} and \texttt{isActive = false}. The user record is retained in the database for audit purposes but excluded from \texttt{GET /auth/users} results.
+
+\subsection{RabbitMQ Listener}
+\begin{lstlisting}[style=javastyle, caption={User Validation Listener}]
+@RabbitListener(queues = "${rabbitmq.user.validation.request.queue}")
+public Boolean validateUser(Long userId) {
+    if (userId == null) return false;
+    return userRepository.existsByUserid(userId);
+}
+\end{lstlisting}
+
+This listener responds to RPC requests from account-service to validate whether a user exists before account creation.
+
+\section{Account Service (Port 8083)}
+
+\subsection{Purpose}
+Manages bank accounts, branches, and balances. Provides RabbitMQ listeners for account validation and balance operations consumed by transaction-service.
+
+\subsection{Data Model}
+
+\begin{table}[H]
+\centering
+\caption{Account Entity}
+\begin{tabularx}{\textwidth}{llX}
+\toprule
+\textbf{Field} & \textbf{Type} & \textbf{Description} \\
+\midrule
+accountId & Long & Auto-generated primary key \\
+userId & Long & Owner's user ID \\
+accountNumber & String & Unique account number (e.g., NB4A7F2E3C1D8B) \\
+branch & Branch & Many-to-one branch association \\
+balance & BigDecimal & Current balance (default: 0.00) \\
+accountType & AccountType & SAVINGS, CURRENT, FIXED\_DEPOSIT \\
+modeOfOperation & ModeOfOperation & SINGLE, JOINT, EITHER\_OR\_SURVIVOR \\
+version & Long & Optimistic locking version \\
+createdAt & LocalDateTime & Account creation timestamp \\
+updatedAt & LocalDateTime & Last modification timestamp \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Branch Entity}
+\begin{tabularx}{\textwidth}{llX}
+\toprule
+\textbf{Field} & \textbf{Type} & \textbf{Description} \\
+\midrule
+branchId & Long & Auto-generated primary key \\
+branchCode & String & Unique branch identifier \\
+branchName & String & Branch display name \\
+branchAddress & String & Physical address \\
+branchCity & String & City \\
+branchState & String & State \\
+branchZip & String & ZIP/PIN code \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Account Number Generation}
+Account numbers are generated as \texttt{NB} followed by 12 random uppercase alphanumeric characters derived from UUID. Uniqueness is guaranteed by checking against existing records with up to 20 retry attempts.
+
+\subsection{API Endpoints}
+
+\begin{table}[H]
+\centering
+\caption{Account Service Endpoints}
+\begin{tabularx}{\textwidth}{llXl}
+\toprule
+\textbf{Method} & \textbf{Path} & \textbf{Description} & \textbf{Auth} \\
+\midrule
+POST & /api/accounts/create & Create new account & Yes \\
+GET & /api/accounts/get/\{id\} & Get account by ID & Yes \\
+GET & /api/accounts/get/all & Get all accounts & Yes \\
+GET & /api/accounts/user/\{userId\} & Get accounts by user & Yes \\
+GET & /api/accounts/number/\{num\} & Get account by number & Yes \\
+PUT & /api/accounts/update/\{id\} & Update account & Yes \\
+DELETE & /api/accounts/delete/\{id\} & Delete account & Yes \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{RabbitMQ Listeners}
+The account-service exposes three RabbitMQ listeners for inter-service operations:
+
+\begin{enumerate}
+    \item \textbf{Account Validation Listener} (\texttt{account-validation-queue}): Receives an account number string, returns \texttt{true} if the account exists.
+    \item \textbf{Debit Listener} (\texttt{account-debit-queue}): Receives \texttt{\{accountNumber, amount\}}, debits the balance atomically. Returns \texttt{false} if insufficient funds.
+    \item \textbf{Credit Listener} (\texttt{account-credit-queue}): Receives \texttt{\{accountNumber, amount\}}, credits the balance atomically.
+\end{enumerate}
+
+\subsection{Update Authorization}
+Account updates are subject to role-based restrictions:
+\begin{itemize}
+    \item \textbf{Account Owner}: Can only change the mode of operation.
+    \item \textbf{Admin}: Can change account type, branch, balance, and ownership (userId).
+\end{itemize}
+
+\section{Transaction Service (Port 8084)}
+
+\subsection{Purpose}
+Records all financial transactions and orchestrates fund transfers between accounts via RabbitMQ-based communication with account-service.
+
+\subsection{Data Model}
+
+\begin{table}[H]
+\centering
+\caption{Transaction Entity}
+\begin{tabularx}{\textwidth}{llX}
+\toprule
+\textbf{Field} & \textbf{Type} & \textbf{Description} \\
+\midrule
+id & Long & Auto-generated primary key \\
+transactionId & String & Unique ID (e.g., NEFT followed by 60 digits) \\
+sourceAccount & Long & Source account identifier \\
+destinationAccount & Long & Destination account identifier \\
+transactionType & TransactionType & DEBIT, CREDIT, TRANSFER, REFUND, etc. \\
+modeOfTransaction & ModeOfTransaction & ONLINE, ATM, UPI, MOBILE\_BANKING, etc. \\
+transactionMedium & TransactionMedium & NEFT, RTGS, IMPS, UPI, OTHER \\
+amount & BigInteger & Transfer amount \\
+sourceOrDestinationBankId & SourceOrDestinationBank & Bank details (ManyToOne) \\
+description & String & Transaction description \\
+remarks & String & Additional remarks \\
+transactionDate & LocalDateTime & When the transaction occurred \\
+transactionStatus & TransactionStatus & PENDING, SUCCESSFUL, FAILED, etc. \\
+createdAt & LocalDateTime & Record creation time \\
+updatedAt & LocalDateTime & Last update time \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Transaction Status Lifecycle}
+The system supports 30+ transaction statuses. The primary lifecycle for fund transfers is:
+
+\begin{center}
+\texttt{PENDING} $\rightarrow$ \texttt{SUCCESSFUL} \\
+\texttt{PENDING} $\rightarrow$ \texttt{FAILED\_INSUFFICIENT\_FUNDS} \\
+\texttt{PENDING} $\rightarrow$ \texttt{FAILED\_TECHNICAL\_ERROR}
+\end{center}
+
+\subsection{API Endpoints}
+
+\begin{table}[H]
+\centering
+\caption{Transaction Service Endpoints}
+\begin{tabularx}{\textwidth}{llXl}
+\toprule
+\textbf{Method} & \textbf{Path} & \textbf{Description} & \textbf{Auth} \\
+\midrule
+POST & /transactions/create & Create a transaction record & Yes \\
+POST & /transactions/transfer & Execute fund transfer & Yes \\
+GET & /transactions/\{txnId\} & Get transaction by ID & Yes \\
+GET & /transactions/account/\{accId\} & Transaction history by account & Yes \\
+GET & /transactions/all & Get all transactions & Yes \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection{POST /transactions/transfer (Fund Transfer)}
+
+\begin{lstlisting}[style=jsonstyle, caption={Fund Transfer Request}]
+{
+    "sourceAccountNumber": "NB4A7F2E3C1D8B",
+    "destinationAccountNumber": "NB9X2K5M7P3Q1R",
+    "amount": 50000,
+    "description": "Rent payment",
+    "remarks": "June 2026",
+    "sourceOrDestinationBank": {
+        "bankName": "Neptune Bank",
+        "bankIFSCCode": "NPTB0001234",
+        "bankBranchName": "Main Branch",
+        "bankBranchCity": "Mumbai",
+        "bankBranchState": "Maharashtra",
+        "bankBranchCountry": "India",
+        "bankBranchZipCode": "400001"
+    }
+}
+\end{lstlisting}
+
+\begin{lstlisting}[style=jsonstyle, caption={Fund Transfer Response (Success)}]
+{
+    "status": "success",
+    "message": "Fund transfer completed successfully.",
+    "transactionId": "NEFT843927156...",
+    "amount": "50000",
+    "code": "201"
+}
+\end{lstlisting}
+
+\subsection{Fund Transfer Flow}
+The fund transfer process follows a saga-like pattern with compensating transactions:
+
+\begin{enumerate}
+    \item \textbf{Validation}: Verify source and destination accounts are different and both exist (via RabbitMQ to account-service).
+    \item \textbf{Record}: Save a new transaction record with status \texttt{PENDING}.
+    \item \textbf{Debit}: Send debit request to account-service via \texttt{account-debit-queue}.
+    \item \textbf{Credit}: On successful debit, send credit request via \texttt{account-credit-queue}.
+    \item \textbf{Rollback}: If credit fails, automatically reverse the debit by crediting the source account back.
+    \item \textbf{Finalize}: Update transaction status to \texttt{SUCCESSFUL} or appropriate failure status.
+\end{enumerate}
+
+\begin{warnbox}[Failure Handling]
+If the debit succeeds but the credit fails, the system automatically reverses the debit by crediting the amount back to the source account, and the transaction is marked as \texttt{FAILED\_TECHNICAL\_ERROR}.
+\end{warnbox}
+
+\subsection{Transaction History}
+The \texttt{GET /transactions/account/\{accountId\}} endpoint returns all transactions where the given account is either the source or destination, ordered by transaction date descending (most recent first).
+
+\section{OTP Service (Port 8082)}
+
+\subsection{Purpose}
+Provides multi-channel OTP generation, delivery (SMS and Email), and verification for transaction authorization and user verification workflows.
+
+\subsection{Data Model}
+
+\begin{table}[H]
+\centering
+\caption{OtpRecord Entity}
+\begin{tabularx}{\textwidth}{llX}
+\toprule
+\textbf{Field} & \textbf{Type} & \textbf{Description} \\
+\midrule
+id & Long & Auto-generated primary key \\
+identifier & String & Phone number or email (indexed) \\
+otp & String & 6-digit generated OTP (indexed) \\
+createdAt & LocalDateTime & Generation timestamp \\
+expiryTime & LocalDateTime & Expiration (5 minutes from creation) \\
+isUsed & Boolean & Whether the OTP has been consumed \\
+isOtpExpired & Boolean & Whether the OTP has expired \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{OTP Generation}
+OTPs are generated using \texttt{java.security.SecureRandom} to ensure cryptographic randomness. Each OTP is a 6-digit numeric string.
+
+\subsection{API Endpoints}
+
+\begin{table}[H]
+\centering
+\caption{OTP Service Endpoints}
+\begin{tabularx}{\textwidth}{llXl}
+\toprule
+\textbf{Method} & \textbf{Path} & \textbf{Description} & \textbf{Auth} \\
+\midrule
+POST & /api/otp/send & Send OTP via SMS and/or Email & No \\
+POST & /api/otp/verify & Verify an OTP & No \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection{POST /api/otp/send}
+\begin{lstlisting}[style=jsonstyle, caption={OTP Send Request}]
+{
+    "phone": "+919876543210",
+    "email": "user@example.com"
+}
+\end{lstlisting}
+
+Both channels are optional but at least one must be provided. The service prevents duplicate active OTPs for the same identifier, returning 429 Too Many Requests if an active OTP already exists.
+
+\subsection{Delivery Channels}
+\begin{itemize}
+    \item \textbf{SMS}: Delivered via TextBee API gateway using REST calls.
+    \item \textbf{Email}: Sent via Gmail SMTP using Spring Mail with \texttt{SimpleMailMessage}.
+\end{itemize}
+
+\chapter{Database Configuration}
+
+\section{PostgreSQL Setup}
+All services connect to a PostgreSQL instance on \texttt{localhost:5433} with the following databases:
+
+\begin{table}[H]
+\centering
+\caption{Database Configuration}
+\begin{tabularx}{\textwidth}{llll}
+\toprule
+\textbf{Service} & \textbf{Database} & \textbf{Username} & \textbf{DDL Mode} \\
+\midrule
+auth-service & AuthDB & neptune & update \\
+user-service & UserDB & neptune & update \\
+otp-service & OtpDB & neptune & create \\
+account-service & AccountDB & neptune & update \\
+transaction-service & TransactionDB & neptune & update \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{infobox}[DDL Auto Configuration]
+Most services use \texttt{spring.jpa.hibernate.ddl-auto=update}, which creates tables on first run and adds new columns/tables on subsequent runs without dropping existing data. This ensures data persistence across service restarts.
+\end{infobox}
+
+\section{Entity Relationships}
+
+\subsection{User Service Entities}
+\begin{itemize}
+    \item \texttt{Users} $\xleftrightarrow{1:1}$ \texttt{ContactDetails} (bidirectional, cascade ALL)
+    \item \texttt{Users} $\xleftrightarrow{1:1}$ \texttt{NomineeDetails} (bidirectional, cascade ALL)
+    \item \texttt{Users} $\xleftrightarrow{1:1}$ \texttt{Kyc} (bidirectional, cascade ALL)
+\end{itemize}
+
+\subsection{Account Service Entities}
+\begin{itemize}
+    \item \texttt{Branch} $\xleftrightarrow{1:N}$ \texttt{Account} (one branch has many accounts)
+\end{itemize}
+
+\subsection{Transaction Service Entities}
+\begin{itemize}
+    \item \texttt{SourceOrDestinationBank} $\xleftrightarrow{1:N}$ \texttt{Transaction} (one bank entry links to many transactions)
+\end{itemize}
+
+\chapter{Error Handling}
+
+\section{Global Exception Handling}
+Each service implements a \texttt{@RestControllerAdvice} global exception handler that provides consistent error responses across the system.
+
+\begin{table}[H]
+\centering
+\caption{Exception Handling Matrix}
+\begin{tabularx}{\textwidth}{lclX}
+\toprule
+\textbf{Exception} & \textbf{HTTP} & \textbf{Services} & \textbf{Scenario} \\
+\midrule
+EntityNotFoundException & 404 & user, transaction & Resource not found by ID \\
+IllegalArgumentException & 400 & user & Invalid input (e.g., missing spouse name) \\
+ConstraintViolationException & 400 & user, transaction, otp & Bean validation failures \\
+MethodArgumentNotValidException & 400 & All & @Valid DTO validation errors \\
+Exception (generic) & 500 & All & Unexpected runtime errors \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Error Response Format}
+\begin{lstlisting}[style=jsonstyle, caption={Standard Error Response}]
+{
+    "success": false,
+    "message": "User not found with ID: 42",
+    "errors": ["field: validation message"]
+}
+\end{lstlisting}
+
+\chapter{RabbitMQ Configuration}
+
+\section{Connection Settings}
+All services sharing RabbitMQ use the following connection parameters:
+
+\begin{lstlisting}[style=propstyle, caption={RabbitMQ Properties}]
+spring.rabbitmq.host=localhost
+spring.rabbitmq.port=5672
+spring.rabbitmq.username=neptune
+spring.rabbitmq.password=ankit
+spring.rabbitmq.listener.simple.concurrency=3
+spring.rabbitmq.listener.simple.max-concurrency=10
+\end{lstlisting}
+
+\section{Message Serialization}
+All services use \texttt{Jackson2JsonMessageConverter} for JSON-based message serialization/deserialization over RabbitMQ, ensuring type-safe communication between producers and consumers.
+
+\section{RPC Pattern}
+The system uses RabbitMQ's request/reply pattern (\texttt{convertSendAndReceive}) with a 5-second reply timeout. This provides synchronous-like behavior over asynchronous messaging for operations that require immediate confirmation (e.g., account validation before proceeding with a transfer).
+
+\chapter{Deployment}
+
+\section{Prerequisites}
+\begin{enumerate}
+    \item Java 21 JDK installed
+    \item PostgreSQL 16 running on port 5433
+    \item RabbitMQ running on port 5672
+    \item Required databases created: AuthDB, UserDB, OtpDB, AccountDB, TransactionDB
+    \item RSA key pair (\texttt{private.pem}, \texttt{public.pem}) in each service's \texttt{src/main/resources/}
+\end{enumerate}
+
+\section{Build Commands}
+\begin{lstlisting}[style=propstyle, caption={Building All Services}]
+cd auth-service && ./gradlew build -x test
+cd user-service && ./gradlew build -x test
+cd otp-service && ./gradlew build -x test
+cd account-service && ./gradlew build -x test
+cd transaction-service && ./gradlew build -x test
+\end{lstlisting}
+
+\section{Run Order}
+Services should be started in the following order to satisfy dependencies:
+
+\begin{enumerate}
+    \item \textbf{auth-service} (port 8086) -- no dependencies
+    \item \textbf{otp-service} (port 8082) -- no inter-service dependencies
+    \item \textbf{user-service} (port 8080) -- RabbitMQ listener (consumed by account-service)
+    \item \textbf{account-service} (port 8083) -- depends on user-service via RabbitMQ
+    \item \textbf{transaction-service} (port 8084) -- depends on account-service via RabbitMQ
+\end{enumerate}
+
+\chapter{API Quick Reference}
+
+\begin{longtable}{llll}
+\caption{Complete API Endpoint Reference} \\
+\toprule
+\textbf{Method} & \textbf{Path} & \textbf{Service} & \textbf{Description} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Method} & \textbf{Path} & \textbf{Service} & \textbf{Description} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+
+POST & /auth/login & auth & Login \\
+POST & /auth/add-user & auth & Register credentials \\
+GET & /auth/validate & auth & Validate JWT \\
+\midrule
+POST & /auth/user & user & Register user \\
+GET & /auth/user/\{id\} & user & Get user \\
+GET & /auth/users & user & List all users \\
+PUT & /auth/user/\{id\} & user & Update user \\
+DELETE & /auth/user/\{id\} & user & Delete user \\
+GET & /auth/user/exists/\{id\} & user & Check existence \\
+\midrule
+POST & /api/accounts/create & account & Create account \\
+GET & /api/accounts/get/\{id\} & account & Get by ID \\
+GET & /api/accounts/get/all & account & List all \\
+GET & /api/accounts/user/\{uid\} & account & By user ID \\
+GET & /api/accounts/number/\{num\} & account & By number \\
+PUT & /api/accounts/update/\{id\} & account & Update \\
+DELETE & /api/accounts/delete/\{id\} & account & Delete \\
+\midrule
+POST & /transactions/create & transaction & Create record \\
+POST & /transactions/transfer & transaction & Fund transfer \\
+GET & /transactions/\{txnId\} & transaction & Get by ID \\
+GET & /transactions/account/\{id\} & transaction & History \\
+GET & /transactions/all & transaction & List all \\
+\midrule
+POST & /api/otp/send & otp & Send OTP \\
+POST & /api/otp/verify & otp & Verify OTP \\
+
+\end{longtable}
+
+\chapter{License \& Intellectual Property}
+
+\section{Copyright Notice}
+\begin{center}
+\fbox{\parbox{0.9\textwidth}{\centering
+\large\textbf{\textcopyright\ 2025--2026 Ayshi Shannidhya Panda}\\[6pt]
+\normalsize All rights reserved.
+}}
+\end{center}
+
+\vspace{0.5cm}
+
+This software, including all source code, documentation, configuration files, build scripts, and associated materials (collectively, the ``Software''), is the original intellectual property of \textbf{Ayshi Shannidhya Panda}. The Software was independently designed, developed, and tested by the Author.
+
+\section{Proprietary License Terms}
+
+The Software is distributed under a \textbf{Proprietary Software License Agreement}. The full license text is included in the \texttt{LICENSE} file at the root of the project repository.
+
+\subsection{Grant of License}
+Subject to the terms of the license agreement, the Author grants the Licensee a \textbf{non-exclusive, non-transferable, revocable} license to:
+\begin{itemize}[leftmargin=*]
+    \item View and review the Software for evaluation and reference purposes.
+    \item Use the Software internally within the Licensee's organization solely for the purposes agreed upon between the Author and the Licensee.
+\end{itemize}
+
+\subsection{Restrictions}
+The Licensee \textbf{SHALL NOT}, without the prior written consent of the Author:
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Copy or Reproduce} the Software or any portion thereof, except for reasonable backup purposes.
+    \item \textbf{Modify, Adapt, or Create Derivative Works} based on the Software, including reverse engineering, decompilation, or disassembly.
+    \item \textbf{Distribute, Sublicense, Sell, or Transfer} the Software or any rights therein to any third party.
+    \item \textbf{Remove or Alter} any copyright notices, proprietary legends, or confidentiality markings.
+    \item \textbf{Use Commercially} the Software for resale, SaaS offerings, or integration into commercial products without a separate commercial license.
+    \item \textbf{Claim Authorship or Ownership} of the Software or any portion thereof.
+    \item \textbf{Use Competitively} the Software against the Author or the Author's interests.
+\end{enumerate}
+
+\subsection{Intellectual Property Rights}
+All intellectual property rights, including but not limited to copyrights, patents, trade secrets, and trademarks, in and to the Software \textbf{remain the exclusive property of the Author}. The license agreement does not transfer any ownership rights to the Licensee.
+
+\subsection{Confidentiality}
+The Licensee acknowledges that the Software contains confidential and proprietary information. The Licensee agrees to:
+\begin{itemize}[leftmargin=*]
+    \item Maintain the confidentiality of the Software.
+    \item Not disclose the Software to any third party without the Author's prior written consent.
+    \item Take all reasonable measures to protect the Software from unauthorized access, use, or disclosure.
+\end{itemize}
+
+\subsection{Termination}
+\begin{itemize}[leftmargin=*]
+    \item The license is effective until terminated by the Author.
+    \item The Author may terminate the license at any time by providing written notice.
+    \item The license automatically terminates upon any breach of terms.
+    \item Upon termination, the Licensee must cease all use and destroy all copies.
+\end{itemize}
+
+\subsection{Attribution Requirement}
+Any permitted use of the Software must include the following attribution:
+
+\begin{tcolorbox}[colback=neptuneblue!5, colframe=neptuneblue!50, arc=3pt]
+\texttt{Neptune Bank -- Online Banking System}\\
+\texttt{Copyright (c) 2025--2026 Ayshi Shannidhya Panda. All rights reserved.}
+\end{tcolorbox}
+
+\subsection{Governing Law}
+This agreement is governed by and construed in accordance with the laws of \textbf{India}. Any disputes arising under this agreement shall be subject to the exclusive jurisdiction of the courts located in India.
+
+\section{Disclaimer of Warranty}
+
+\begin{warnbox}[No Warranty]
+THE SOFTWARE IS PROVIDED ``AS IS'' WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. THE AUTHOR SHALL NOT BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY ARISING FROM THE USE OF THE SOFTWARE.
+\end{warnbox}
+
+\section{Contact Information}
+For licensing inquiries, commercial use requests, or permissions:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{rl}
+\textbf{Name:} & Ayshi Shannidhya Panda \\
+\textbf{Email:} & a.shannidhya@gmail.com \\
+\textbf{GitHub:} & \url{https://github.com/ayshishannidhya} \\
+\end{tabular}
+\end{table}
+
+\chapter{Conclusion}
+The Neptune Bank Online Banking System provides a comprehensive, secure, and scalable banking platform built on modern microservices principles. The system successfully implements:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Security}: RSA-based JWT authentication with BCrypt password hashing
+    \item \textbf{Account Management}: Full lifecycle management with branch associations and role-based access control
+    \item \textbf{Fund Transfers}: Reliable inter-account transfers with saga-pattern compensation
+    \item \textbf{Transaction History}: Complete audit trail with chronological tracking
+    \item \textbf{User Management}: Comprehensive user profiles with KYC document management
+    \item \textbf{OTP Verification}: Multi-channel (SMS + Email) one-time password system
+\end{itemize}
+
+The microservices architecture ensures independent scalability, fault isolation, and technology flexibility for each service component. The use of RabbitMQ for inter-service communication provides reliable asynchronous messaging with request/reply patterns for synchronous-like operations.
+
+\end{document}
