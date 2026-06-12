@@ -37,7 +37,7 @@ public class OtpController {
             status.append("Email: ").append(emailResponse.getBody()).append("\n");
         }
 
-        if (status.length() == 0) {
+        if (status.isEmpty()) {
             return ResponseEntity.badRequest().body("At least one of phone or email is required.");
         }
 

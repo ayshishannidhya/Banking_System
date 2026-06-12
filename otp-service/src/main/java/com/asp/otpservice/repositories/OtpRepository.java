@@ -14,6 +14,7 @@ public interface OtpRepository extends JpaRepository<OtpRecord, Long> {
 
     Optional<OtpRecord> findByIdentifier(String identifier);
 
+    @Transactional
     void deleteByIdentifier(String identifier);
 
     @Query("SELECT COUNT(o) > 0 FROM OtpRecord o WHERE o.otp = ?1 AND o.identifier = ?2 AND o.isUsed = false AND o.isOtpExpired = false")

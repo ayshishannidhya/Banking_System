@@ -11,13 +11,15 @@ package com.asp.otpservice.otp;
  * Author: Ayshi Shannidhya Panda
  * Created on: 22-06-2025
  */
+import lombok.NonNull;
+
 import java.security.SecureRandom;
 
 public class OtpGenerator {
 
     private static final SecureRandom random = new SecureRandom();
 
-    public static String generateOtp(int length) {
+    public static @NonNull String generateOtp(int length) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < length; i++) {
             sb.append(random.nextInt(10));

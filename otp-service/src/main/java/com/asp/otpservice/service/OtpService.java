@@ -20,24 +20,27 @@ import java.util.Optional;
 @Service
 public class OtpService {
 
-    private final JavaMailSender mailSender;
-    private final OtpRepository otpRepository;
+    // make injections optional so the service bean can be created even if some beans are absent
+    @Autowired(required = false)
+    private JavaMailSender mailSender;
 
-    @Value("bd83eaff-0466-41ed-8ec8-a3234b09f36e")
+    @Autowired(required = false)
+    private OtpRepository otpRepository;
+
+    @Value("${textbee.api.key}")
     private String apiKey;
 
-    @Value("68594bd7a5fdde60955c7fdc")
+    @Value("${textbee.device.id}")
     private String deviceId;
 
     private static final long OTP_EXPIRY_SECONDS = 300;
 
-    @Autowired
-    public OtpService(JavaMailSender mailSender, OtpRepository otpRepository) {
-        this.mailSender = mailSender;
-        this.otpRepository = otpRepository;
-    }
-
     public ResponseEntity<String> sendEmailOtp(String toEmail) {
+        if (otpRepository == null || mailSender == null) {
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                    .body("Email sending not available (missing beans).");
+        }
+
         String otp = OtpGenerator.generateOtp(6);
 
         if (otpRepository.checkActiveOtpExists(toEmail)) {
@@ -117,6 +120,11 @@ public class OtpService {
     }
 
     public ResponseEntity<String> verifyOtp(String identifier, String inputOtp) {
+        if (otpRepository == null) {
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                    .body("OTP verification not available (missing repository).");
+        }
+
         Optional<OtpRecord> otpOptional = otpRepository.findByIdentifier(identifier);
 
         if (otpOptional.isEmpty()) {

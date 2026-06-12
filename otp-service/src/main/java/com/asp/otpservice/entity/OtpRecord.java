@@ -46,12 +46,4 @@ public class OtpRecord {
         this.createdAt = LocalDateTime.now();
     }
 
-    public OtpRecord(String identifier, String otp, boolean isUsed, boolean isOtpExpired, Instant expiry) {
-        this.identifier = identifier;
-        this.otp = otp;
-        this.createdAt = LocalDateTime.now();
-        this.expiryTime = LocalDateTime.ofInstant(expiry, ZoneId.systemDefault());
-        this.isUsed = isUsed;
-        this.isOtpExpired = isOtpExpired;
-    }
 }

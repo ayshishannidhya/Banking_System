@@ -36,9 +36,4 @@ public class Otp {
 
     private Instant expiryTime;
 
-    public Otp(String phoneNumber, String otp, Instant expiryTime) {
-        this.phoneNumber = phoneNumber;
-        this.otp = otp;
-        this.expiryTime = expiryTime;
-    }
 }

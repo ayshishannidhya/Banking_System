@@ -16,11 +16,12 @@ package com.asp.userservice.mappers;
 import com.asp.userservice.DTO.UsersDTO.UsersRequestDTO;
 import com.asp.userservice.DTO.UsersDTO.UsersResponseDTO;
 import com.asp.userservice.models.Users;
+import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
 public class UsersMapper {
-    public static Users toEntity(UsersRequestDTO dto) {
+    public static Users toEntity(@NonNull UsersRequestDTO dto) {
         return Users.builder()
                 .firstName(dto.getFirstName())
                 .middleName(dto.getMiddleName())

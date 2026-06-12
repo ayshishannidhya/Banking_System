@@ -10,9 +10,11 @@ import com.asp.accountservice.models.Branch;
 import com.asp.accountservice.repositories.AccountRepository;
 import com.asp.accountservice.repositories.BranchRepository;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -81,7 +83,6 @@ public class AccountService {
         Account saved = accountRepository.save(account);
 
         return AccountResponseDTO.builder()
-                .accountNumber(accountNumber)
                 .accountId(saved.getAccountId())
                 .accountNumber(saved.getAccountNumber())
                 .accountType(saved.getAccountType())
@@ -105,22 +106,19 @@ public class AccountService {
             if (attempts > 20) {
                 throw new IllegalStateException("Unable to generate unique account number after " + attempts + " attempts");
             }
-
         } while (accountRepository.existsByAccountNumber(candidate));
-
         return candidate;
     }
 
-
     public AccountResponseDTO getAccountById(Long id) {
-        Account account = accountRepository.getAccountByAccountId(id);
-
         if (id == null) {
             return AccountResponseDTO.builder()
                     .success(false)
                     .message("Account ID required.")
                     .build();
         }
+
+        Account account = accountRepository.getAccountByAccountId(id);
 
         if (account == null) {
             return AccountResponseDTO.builder()
@@ -141,7 +139,6 @@ public class AccountService {
                 .branchId(account.getBranch() != null ? account.getBranch().getBranchId() : null)
                 .branchCode(account.getBranch() != null ? account.getBranch().getBranchCode() : null)
                 .createdAt(account.getCreatedAt())
-//                .branch(null)
                 .build();
     }
 
@@ -149,6 +146,23 @@ public class AccountService {
         return accountRepository.findAll().stream()
                 .map(this::maptoDTO)
                 .collect(Collectors.toList());
+    }
+
+    public List<AccountResponseDTO> getAccountsByUserId(Long userId) {
+        return accountRepository.findByUserId(userId).stream()
+                .map(this::maptoDTO)
+                .collect(Collectors.toList());
+    }
+
+    public AccountResponseDTO getAccountByAccountNumber(String accountNumber) {
+        Optional<Account> accountOpt = accountRepository.findByAccountNumber(accountNumber);
+        if (accountOpt.isEmpty()) {
+            return AccountResponseDTO.builder()
+                    .success(false)
+                    .message("Account not found with number: " + accountNumber)
+                    .build();
+        }
+        return maptoDTO(accountOpt.get());
     }
 
     private AccountResponseDTO maptoDTO(Account account) {
@@ -190,79 +204,13 @@ public class AccountService {
         if (!accountRepository.existsById(id)) {
             throw new EntityNotFoundException("Account not found: " + id);
         }
-        accountRepository.deleteByAccountId(id); // runs inside transaction due to annotation
+        accountRepository.deleteByAccountId(id);
     }
-
-//    public AccountResponseDTO updateAccount(Long id, @Valid AccountUpdateRequestDTO updatedAccount) {
-//        if (id == null) {
-//            return AccountResponseDTO.builder()
-//                    .success(false)
-//                    .message("Account ID required.")
-//                    .build();
-//        }
-//
-//        var accountId = accountRepository.findById(id);
-//        if (accountId.isEmpty()) {
-//            return AccountResponseDTO.builder()
-//                    .success(false)
-//                    .message("Account not found with ID: " + id)
-//                    .build();
-//        }
-//        Account account = accountId.get();
-//
-//        if (updatedAccount.getUserId() != null && !updatedAccount.getUserId().equals(account.getUserId())) {
-//            Long newUserId = updatedAccount.getUserId();
-//            if (!userValidationClient.isUserExist(newUserId)) {
-//                return AccountResponseDTO.builder()
-//                        .success(false)
-//                        .message("User not found with ID: " + newUserId)
-//                        .build();
-//            }
-//            account.setUserId(newUserId);
-//        }
-//        if (updatedAccount.getBranchCode() != null) {
-//            var byCode = branchRepository.findByBranchCode(updatedAccount.getBranchCode());
-//            if (byCode.isEmpty()) {
-//                return AccountResponseDTO.builder()
-//                        .success(false)
-//                        .message("Branch not found with code: " + updatedAccount.getBranchCode())
-//                        .build();
-//            }
-//            account.setBranch(byCode.get());
-//        }
-//        if (updatedAccount.getAccountType() != null) {
-//            account.setAccountType(updatedAccount.getAccountType());
-//        }
-//        if (updatedAccount.getModeOfOperation() != null) {
-//            account.setModeOfOperation(updatedAccount.getModeOfOperation());
-//        }
-//        if (updatedAccount.getBalance() != null) {
-//            account.setBalance(updatedAccount.getBalance());
-//        }
-//
-//        Account saved = accountRepository.save(account);
-//
-//        return AccountResponseDTO.builder()
-//                .accountId(saved.getAccountId())
-//                .accountNumber(saved.getAccountNumber())
-//                .accountType(saved.getAccountType())
-//                .balance(saved.getBalance())
-//                .userId(saved.getUserId())
-//                .modeOfOperation(saved.getModeOfOperation())
-//                .branchId(saved.getBranch() != null ? saved.getBranch().getBranchId() : null)
-//                .branchCode(saved.getBranch() != null ? saved.getBranch().getBranchCode() : null)
-//                .updatedAt(saved.getUpdatedAt())
-//                .balance(saved.getBalance())
-//                .success(true)
-//                .message("Account updated successfully for ID " + id)
-//                .build();
-//    }
 
     public AccountResponseDTO updateAccount(Long id,
                                             AccountUpdateRequestDTO updatedAccount,
                                             Long requesterId,
                                             boolean isAdmin) {
-        // Basic validation
         if (id == null) {
             return AccountResponseDTO.builder()
                     .success(false)
@@ -281,14 +229,12 @@ public class AccountService {
 
         boolean isOwner = account.getUserId() != null && account.getUserId().equals(requesterId);
         if (!isAdmin && !isOwner) {
-            // Not allowed to update someone else's account
             return AccountResponseDTO.builder()
                     .success(false)
                     .message("Access denied: not account owner or admin.")
                     .build();
         }
 
-        // -- Handle userId change: only admin allowed --
         if (updatedAccount.getUserId() != null && !updatedAccount.getUserId().equals(account.getUserId())) {
             if (!isAdmin) {
                 return AccountResponseDTO.builder()
@@ -297,7 +243,6 @@ public class AccountService {
                         .build();
             }
             Long newUserId = updatedAccount.getUserId();
-            // Validate user exists via user validation client
             if (!userValidationClient.isUserExist(newUserId)) {
                 return AccountResponseDTO.builder()
                         .success(false)
@@ -307,7 +252,6 @@ public class AccountService {
             account.setUserId(newUserId);
         }
 
-        // -- Handle branch change: only admin --
         if (updatedAccount.getBranchCode() != null) {
             if (!isAdmin) {
                 return AccountResponseDTO.builder()
@@ -325,7 +269,6 @@ public class AccountService {
             account.setBranch(byCode.get());
         }
 
-        // -- accountType: only admin --
         if (updatedAccount.getAccountType() != null) {
             if (!isAdmin) {
                 return AccountResponseDTO.builder()
@@ -336,12 +279,10 @@ public class AccountService {
             account.setAccountType(updatedAccount.getAccountType());
         }
 
-        // -- modeOfOperation: owner or admin allowed --
         if (updatedAccount.getModeOfOperation() != null) {
             account.setModeOfOperation(updatedAccount.getModeOfOperation());
         }
 
-        // -- balance: only admin (prevent users from setting balances) --
         if (updatedAccount.getBalance() != null) {
             if (!isAdmin) {
                 return AccountResponseDTO.builder()
@@ -352,11 +293,7 @@ public class AccountService {
             account.setBalance(updatedAccount.getBalance());
         }
 
-        // Save and return DTO
         Account saved = accountRepository.save(account);
-
-        // Optional: record audit log (not implemented here)
-        // auditService.recordAccountUpdate(requesterId, requesterUsername, id, updatedAccount);
 
         return AccountResponseDTO.builder()
                 .accountId(saved.getAccountId())
@@ -371,5 +308,33 @@ public class AccountService {
                 .success(true)
                 .message("Account updated successfully for ID " + id)
                 .build();
+    }
+
+    @Transactional
+    public boolean debitAccount(String accountNumber, BigDecimal amount) {
+        Optional<Account> accountOpt = accountRepository.findByAccountNumber(accountNumber);
+        if (accountOpt.isEmpty()) return false;
+
+        Account account = accountOpt.get();
+        if (account.getBalance().compareTo(amount) < 0) return false;
+
+        account.setBalance(account.getBalance().subtract(amount));
+        accountRepository.save(account);
+        return true;
+    }
+
+    @Transactional
+    public boolean creditAccount(String accountNumber, BigDecimal amount) {
+        Optional<Account> accountOpt = accountRepository.findByAccountNumber(accountNumber);
+        if (accountOpt.isEmpty()) return false;
+
+        Account account = accountOpt.get();
+        account.setBalance(account.getBalance().add(amount));
+        accountRepository.save(account);
+        return true;
+    }
+
+    public boolean accountExists(String accountNumber) {
+        return accountRepository.existsByAccountNumber(accountNumber);
     }
 }
