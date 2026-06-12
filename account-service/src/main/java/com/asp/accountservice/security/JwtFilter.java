@@ -1,5 +1,17 @@
 package com.asp.accountservice.security;
 
+/*
+ * Copyright (c) 2025 Ayshi Shannidhya Panda. All rights reserved.
+ *
+ * This source code is confidential and intended solely for internal use.
+ * Unauthorized copying, modification, distribution, or disclosure of this
+ * file, via any medium, is strictly prohibited.
+ *
+ * Project: Neptune Bank
+ * Author: Ayshi Shannidhya Panda
+ * Created on: 12-06-2026
+ */
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import jakarta.servlet.FilterChain;
@@ -41,7 +53,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
                 String username = claims.getSubject();
 
-                // Extract userId safely — token may store it as Integer, Long or String
+                // Extract userId safely â€” token may store it as Integer, Long or String
                 Long userId = null;
                 Object uidObj = claims.get("userId");
                 if (uidObj != null) {

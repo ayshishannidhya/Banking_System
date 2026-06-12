@@ -1,5 +1,17 @@
 package com.asp.authservice.jwt;
 
+/*
+ * Copyright (c) 2025 Ayshi Shannidhya Panda. All rights reserved.
+ *
+ * This source code is confidential and intended solely for internal use.
+ * Unauthorized copying, modification, distribution, or disclosure of this
+ * file, via any medium, is strictly prohibited.
+ *
+ * Project: Neptune Bank
+ * Author: Ayshi Shannidhya Panda
+ * Created on: 12-06-2026
+ */
+
 import com.asp.authservice.model.Users;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -65,13 +77,13 @@ public class JwtUtil {
                 .claim("role", user.getRole().name())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expirationMillis))
-                .signWith(privateKey, SignatureAlgorithm.RS256) // ✅ use private.pem
+                .signWith(privateKey, SignatureAlgorithm.RS256) // âœ… use private.pem
                 .compact();
     }
 
     public Claims validateToken(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(publicKey) // ✅ validate with public.pem
+                .setSigningKey(publicKey) // âœ… validate with public.pem
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
