@@ -5,14 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ea4f5913-685e-4795-8495-31aae95b1909" name="Changes" comment="Refactor OtpService to handle optional dependencies and normalize phone numbers for OTP operations">
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/otp-service/src/main/java/com/asp/otpservice/controller/OtpController.java" beforeDir="false" afterPath="$PROJECT_DIR$/otp-service/src/main/java/com/asp/otpservice/controller/OtpController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/otp-service/src/main/java/com/asp/otpservice/entity/Otp.java" beforeDir="false" afterPath="$PROJECT_DIR$/otp-service/src/main/java/com/asp/otpservice/entity/Otp.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/otp-service/src/main/java/com/asp/otpservice/entity/OtpRecord.java" beforeDir="false" afterPath="$PROJECT_DIR$/otp-service/src/main/java/com/asp/otpservice/entity/OtpRecord.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/otp-service/src/main/java/com/asp/otpservice/otp/OtpGenerator.java" beforeDir="false" afterPath="$PROJECT_DIR$/otp-service/src/main/java/com/asp/otpservice/otp/OtpGenerator.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/otp-service/src/main/java/com/asp/otpservice/service/OtpService.java" beforeDir="false" afterPath="$PROJECT_DIR$/otp-service/src/main/java/com/asp/otpservice/service/OtpService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/otp-service/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/otp-service/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/asp/userservice/mappers/UsersMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/asp/userservice/mappers/UsersMapper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -82,40 +75,40 @@
     <option name="showLibraryContents" value="true" />
     <option name="sortKey" value="BY_TIME_DESCENDING" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Gradle.Build account-service.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.Build auth-service.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.Build otp-service.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.Build transaction-service.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.Build user-service.executor&quot;: &quot;Run&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;Notification.DisplayName-DoNotAsk-DatabaseConfigFileWatcher.found&quot;: &quot;New/updated database configurations found&quot;,
-    &quot;Notification.DoNotAsk-DatabaseConfigFileWatcher.found&quot;: &quot;true&quot;,
-    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
-    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
-    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
-    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;Spring Boot.AccountServiceApplication.executor&quot;: &quot;Run&quot;,
-    &quot;Spring Boot.AuthServiceApplication.executor&quot;: &quot;Run&quot;,
-    &quot;Spring Boot.OtpServiceApplication.executor&quot;: &quot;Run&quot;,
-    &quot;Spring Boot.TransactionServiceApplication.executor&quot;: &quot;Run&quot;,
-    &quot;Spring Boot.UserServiceApplication.executor&quot;: &quot;Run&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/Ankit/IdeaProjects/Banking System&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;run.configurations.included.in.services&quot;: &quot;true&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.general&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Gradle.Build account-service.executor": "Run",
+    "Gradle.Build auth-service.executor": "Run",
+    "Gradle.Build otp-service.executor": "Run",
+    "Gradle.Build transaction-service.executor": "Run",
+    "Gradle.Build user-service.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "Notification.DisplayName-DoNotAsk-DatabaseConfigFileWatcher.found": "New/updated database configurations found",
+    "Notification.DoNotAsk-DatabaseConfigFileWatcher.found": "true",
+    "RequestMappingsPanelOrder0": "0",
+    "RequestMappingsPanelOrder1": "1",
+    "RequestMappingsPanelWidth0": "75",
+    "RequestMappingsPanelWidth1": "75",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "Spring Boot.AccountServiceApplication.executor": "Run",
+    "Spring Boot.AuthServiceApplication.executor": "Run",
+    "Spring Boot.OtpServiceApplication.executor": "Run",
+    "Spring Boot.TransactionServiceApplication.executor": "Run",
+    "Spring Boot.UserServiceApplication.executor": "Run",
+    "git-widget-placeholder": "master",
+    "ignore.virus.scanning.warn.message": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/Ankit/IdeaProjects/Banking System",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "run.configurations.included.in.services": "true",
+    "settings.editor.selected.configurable": "preferences.pluginManager"
   }
-}</component>
+}]]></component>
   <component name="RunManager" selected="Spring Boot.OtpServiceApplication">
     <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
       <shortenClasspath name="NONE" />
@@ -476,6 +469,7 @@
       <workItem from="1767795884894" duration="8914000" />
       <workItem from="1770364242988" duration="33000" />
       <workItem from="1778676311689" duration="11000" />
+      <workItem from="1781233975463" duration="720000" />
     </task>
     <task id="LOCAL-00001" summary="Transaction-Service Fixed">
       <option name="closed" value="true" />
