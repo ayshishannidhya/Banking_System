@@ -1,8 +1,10 @@
-# 🏦 Neptune Bank - Online Banking System
+# 🏦 Neptune Bank — Online Banking System
 
-A secure, scalable, and microservices-based online banking platform built using **Spring Boot 3.5**, **Java 21**, **PostgreSQL**, and **RabbitMQ**.
+A secure, scalable, and microservices-based online banking platform built using **Spring Boot 3.5**, **Java 21**, **PostgreSQL**, **RabbitMQ**, and **Apache Kafka**.
 
 Neptune Bank provides a complete digital banking solution with user onboarding, KYC verification, account management, secure fund transfers, transaction tracking, OTP-based verification, and JWT-based authentication.
+
+> **📄 IEEE Research**: This project also serves as the experimental testbed for an IEEE journal paper evaluating the performance of event-driven banking microservices. See [Research Section](#-ieee-research-paper) below.
 
 ---
 
@@ -25,7 +27,7 @@ Neptune Bank provides a complete digital banking solution with user onboarding, 
 
 ### 💸 Fund Transfers
 - Account-to-Account Transfers
-- RabbitMQ-based Processing
+- Multi-paradigm Processing (REST / RabbitMQ / Kafka)
 - Automatic Rollback on Failures
 - Transaction Tracking
 
@@ -59,18 +61,21 @@ Neptune Bank provides a complete digital banking solution with user onboarding, 
 | Build Tool | Gradle |
 | Database | PostgreSQL 16 |
 | ORM | Spring Data JPA / Hibernate |
-| Messaging | RabbitMQ |
+| Messaging | RabbitMQ, Apache Kafka (KRaft) |
 | Authentication | JWT (RS256) |
 | Security | Spring Security |
 | Password Hashing | BCrypt |
 | Mail Service | Spring Mail |
 | SMS Gateway | TextBee API |
+| Containerization | Docker, Docker Compose |
+| Monitoring | Prometheus, Grafana, cAdvisor |
+| Benchmarking | Apache JMeter 5.6 |
 
 ---
 
 # 🏗 Microservices Architecture
 
-The system consists of five independent microservices.
+The system consists of **seven** independent microservices.
 
 | Service | Port | Responsibility |
 |----------|------|---------------|
@@ -79,6 +84,8 @@ The system consists of five independent microservices.
 | OTP Service | 8082 | OTP Generation & Verification |
 | Account Service | 8083 | Account Management |
 | Transaction Service | 8084 | Fund Transfers & Transactions |
+| Notification Service | 8087 | Event-driven Transaction Notifications |
+| Audit Service | 8088 | Transaction Audit Trail |
 
 ---
 
@@ -97,29 +104,63 @@ The system consists of five independent microservices.
                              │ JWT
                              ▼
 
- ┌─────────────────┐    RabbitMQ    ┌─────────────────┐
- │  User Service   │◄──────────────►│ Account Service │
- │    Port 8080    │                │    Port 8083    │
- └─────────────────┘                └────────┬────────┘
-                                              │
-                                              ▼
-                                     ┌─────────────────┐
-                                     │Transaction Svc │
-                                     │    Port 8084   │
-                                     └────────┬───────┘
-                                              │
-                                              ▼
-                                     ┌─────────────────┐
-                                     │   OTP Service   │
-                                     │    Port 8082    │
-                                     └─────────────────┘
+ ┌─────────────────┐  REST/RabbitMQ/Kafka  ┌─────────────────┐
+ │  User Service   │◄────────────────────►│ Account Service │
+ │    Port 8080    │                      │    Port 8083    │
+ └─────────────────┘                      └────────┬────────┘
+                                                    │
+                                                    ▼
+                                           ┌─────────────────┐
+                                           │Transaction Svc │
+                                           │    Port 8084   │
+                                           └───┬────────┬───┘
+                                               │        │
+                              ┌────────────────┘        └────────────────┐
+                              ▼                                          ▼
+                    ┌─────────────────┐                        ┌─────────────────┐
+                    │   OTP Service   │                        │Notification Svc │
+                    │    Port 8082    │                        │    Port 8087    │
+                    └─────────────────┘                        └─────────────────┘
+                                                                        │
+                                                               ┌───────┘
+                                                               ▼
+                                                      ┌─────────────────┐
+                                                      │  Audit Service  │
+                                                      │    Port 8088    │
+                                                      └─────────────────┘
 ```
 
 ---
 
-# 🔄 RabbitMQ Communication
+## 🔄 Communication Strategy Pattern
 
-## Queues
+The core architectural feature is a **profile-switchable communication pattern** that enables the same business logic to run over three different paradigms:
+
+```
+--spring.profiles.active=rest       # Synchronous HTTP
+--spring.profiles.active=rabbitmq   # RabbitMQ RPC
+--spring.profiles.active=kafka      # Kafka event streaming
+```
+
+```text
+TransactionService
+       │
+       ├── @Profile("rest")     → RestCommunicationStrategy     → HTTP POST → AccountRestController
+       ├── @Profile("rabbitmq") → AccountValidationClient       → RabbitMQ  → AccountValidationListener
+       └── @Profile("kafka")    → KafkaCommunicationStrategy    → Kafka     → KafkaAccountEventListener
+                                                                                    │
+                                                                           AccountService (shared)
+                                                                                    │
+                                                                             AccountRepository
+                                                                                    │
+                                                                              PostgreSQL DB
+```
+
+---
+
+## 🔄 RabbitMQ Communication
+
+### Queues
 
 | Queue Name | Producer | Consumer |
 |-------------|----------|----------|
@@ -127,6 +168,19 @@ The system consists of five independent microservices.
 | account-validation-queue | transaction-service | account-service |
 | account-debit-queue | transaction-service | account-service |
 | account-credit-queue | transaction-service | account-service |
+
+---
+
+## 📨 Kafka Topics
+
+| Topic | Producer | Consumer |
+|-------|----------|----------|
+| account.validation | transaction-service | account-service |
+| account.debit | transaction-service | account-service |
+| account.credit | transaction-service | account-service |
+| transaction.events | transaction-service | notification-service, audit-service |
+| notification.events | notification-service | — |
+| audit.events | audit-service | — |
 
 ---
 
@@ -174,331 +228,138 @@ Use JWT for API Requests
 
 ---
 
-# 📂 Services
+# 📂 Project Structure
 
----
-
-## 🔐 Auth Service (Port 8086)
-
-### Responsibilities
-
-- Login Authentication
-- JWT Generation
-- User Credential Management
-- Role Assignment
-
-### Endpoints
-
-```http
-POST /auth/login
-POST /auth/add-user
-GET  /auth/validate
 ```
-
-### Login Request
-
-```json
-{
-  "username": "john_doe",
-  "password": "password123",
-  "mode": "jwt"
-}
-```
-
----
-
-## 👤 User Service (Port 8080)
-
-### Responsibilities
-
-- User Registration
-- Profile Management
-- KYC Document Management
-- Nominee Management
-
-### KYC Documents Supported
-
-- Aadhaar
-- PAN
-- Passport
-- Voter ID
-- Driving License
-- User Photograph
-- Signature
-
-### Endpoints
-
-```http
-POST   /auth/user
-GET    /auth/user/{id}
-GET    /auth/users
-PUT    /auth/user/{id}
-DELETE /auth/user/{id}
-GET    /auth/user/exists/{id}
+Backend/
+├── account-service/          # Account CRUD, balance, Kafka/RabbitMQ/REST listeners
+├── auth-service/             # JWT authentication, login
+├── transaction-service/      # Fund transfers, communication strategy pattern
+├── user-service/             # User profiles, KYC
+├── otp-service/              # OTP generation & verification
+├── notification-service/     # Kafka event-driven notifications
+├── audit-service/            # Kafka transaction audit trail
+│
+├── docker-compose.yml        # Base orchestration (all services + DBs + monitoring)
+├── docker-compose.kafka.yml  # Kafka experiment overlay
+├── docker-compose.rabbitmq.yml  # RabbitMQ experiment overlay
+├── docker-compose.rest.yml   # REST experiment overlay
+│
+├── monitoring/
+│   ├── prometheus/prometheus.yml
+│   └── grafana/provisioning/
+│
+├── benchmarks/
+│   ├── jmeter/fund_transfer.jmx
+│   ├── chaos/fault-injection.sh
+│   └── scripts/
+│       ├── Run-Experiment.ps1
+│       ├── run-experiment.sh
+│       ├── run-full-matrix.sh
+│       └── analyze_results.py
+│
+└── docs/IEEE/
+    ├── paper/main.tex         # IEEE manuscript
+    ├── paper/references.bib   # 25 verified citations
+    └── literature-review/     # Annotated bibliography
 ```
 
 ---
 
-## 🏦 Account Service (Port 8083)
-
-### Responsibilities
-
-- Account Creation
-- Balance Management
-- Branch Management
-- Account Validation
-
-### Supported Account Types
-
-```java
-SAVINGS
-CURRENT
-FIXED_DEPOSIT
-```
-
-### Endpoints
-
-```http
-POST   /api/accounts/create
-GET    /api/accounts/get/{id}
-GET    /api/accounts/get/all
-GET    /api/accounts/user/{userId}
-GET    /api/accounts/number/{number}
-PUT    /api/accounts/update/{id}
-DELETE /api/accounts/delete/{id}
-```
-
----
-
-## 💸 Transaction Service (Port 8084)
-
-### Responsibilities
-
-- Fund Transfers
-- Transaction Tracking
-- Audit Trail
-
-### Endpoints
-
-```http
-POST /transactions/create
-POST /transactions/transfer
-GET  /transactions/{transactionId}
-GET  /transactions/account/{accountId}
-GET  /transactions/all
-```
-
-### Fund Transfer Workflow
-
-```text
-Validate Accounts
-       │
-       ▼
-Create Transaction (PENDING)
-       │
-       ▼
-Debit Source Account
-       │
-       ▼
-Credit Destination Account
-       │
-       ▼
-Success
-```
-
-### Rollback Strategy
-
-```text
-Debit Success
-      │
-      ▼
-Credit Failed
-      │
-      ▼
-Refund Source Account
-      │
-      ▼
-Mark Transaction Failed
-```
-
----
-
-## 📱 OTP Service (Port 8082)
-
-### Responsibilities
-
-- OTP Generation
-- OTP Verification
-- SMS Delivery
-- Email Delivery
-
-### Endpoints
-
-```http
-POST /api/otp/send
-POST /api/otp/verify
-```
-
-### OTP Properties
-
-| Property | Value |
-|-----------|--------|
-| Length | 6 Digits |
-| Generator | SecureRandom |
-| Expiry | 5 Minutes |
-| Usage | One Time |
-
----
-
-# 🗄 Database Setup
-
-Create the following databases:
-
-```sql
-CREATE DATABASE AuthDB;
-CREATE DATABASE UserDB;
-CREATE DATABASE OtpDB;
-CREATE DATABASE AccountDB;
-CREATE DATABASE TransactionDB;
-```
-
-### Database Configuration
-
-```properties
-spring.datasource.url=jdbc:postgresql://localhost:5433
-spring.datasource.username=neptune
-spring.datasource.password=********
-```
-
----
-
-# ⚙ Prerequisites
-
-- Java 21
-- PostgreSQL 16
-- RabbitMQ
-- Gradle
-- RSA Public Key
-- RSA Private Key
-
----
-
-# 🔨 Build Project
+# 🐳 Docker Quick Start
 
 ```bash
-cd auth-service
-./gradlew build -x test
+# Start with RabbitMQ (default mode)
+docker compose -f docker-compose.yml -f docker-compose.rabbitmq.yml up -d --build
 
-cd ../user-service
-./gradlew build -x test
+# Start with Kafka
+docker compose -f docker-compose.yml -f docker-compose.kafka.yml up -d --build
 
-cd ../otp-service
-./gradlew build -x test
+# Start with REST (synchronous)
+docker compose -f docker-compose.yml -f docker-compose.rest.yml up -d --build
+```
 
-cd ../account-service
-./gradlew build -x test
+### Monitoring
 
-cd ../transaction-service
-./gradlew build -x test
+| Service | URL | Credentials |
+|---------|-----|-------------|
+| Prometheus | http://localhost:9090 | — |
+| Grafana | http://localhost:3000 | admin / neptune |
+| RabbitMQ Management | http://localhost:15672 | neptune / ankit |
+| cAdvisor | http://localhost:8089 | — |
+
+---
+
+# 📄 IEEE Research Paper
+
+**Title**: *Performance Evaluation of Event-Driven Banking Microservices Using Apache Kafka and Spring Boot Under High-Concurrency Workloads*
+
+**Author**: Ayshi Shannidhya Panda
+**Institution**: Silicon Institute of Technology, Sambalpur, Odisha, India
+
+### Research Questions
+
+| ID | Research Question |
+|----|------------------|
+| RQ1 | How does throughput scale across REST, RabbitMQ, and Kafka under increasing concurrency? |
+| RQ2 | What are the latency distributions (p50, p95, p99) for each paradigm? |
+| RQ3 | How does each paradigm utilize CPU and memory resources? |
+| RQ4 | How does each paradigm respond to infrastructure faults? |
+
+### Experiment Matrix
+
+- **3 paradigms** × **6 user levels** (100, 500, 1K, 5K, 10K, 20K) × **5 runs** = **90 experiments**
+- Statistical analysis: ANOVA, Shapiro-Wilk, Kruskal-Wallis, Cohen's d, 95% CI
+
+### Running Experiments
+
+```powershell
+# Single experiment (Windows)
+.\Backend\benchmarks\scripts\Run-Experiment.ps1 -Paradigm kafka -Users 1000 -RunNumber 1
+
+# Full matrix (Bash / WSL)
+./Backend/benchmarks/scripts/run-full-matrix.sh
+
+# Analyze results
+python Backend/benchmarks/scripts/analyze_results.py --input-dir results/ --output-dir analysis/
+```
+
+### Compile Paper
+
+```bash
+cd Backend/docs/IEEE/paper
+pdflatex main.tex && bibtex main && pdflatex main.tex && pdflatex main.tex
 ```
 
 ---
 
-# ▶ Running Services
+# ✅ Highlights
 
-Start services in the following order:
+✅ Microservice Architecture (7 services)
 
-```text
-1. Auth Service
-2. OTP Service
-3. User Service
-4. Account Service
-5. Transaction Service
-```
+✅ Multi-paradigm Communication (REST / RabbitMQ / Kafka)
 
----
+✅ Strategy Pattern for Runtime Paradigm Switching
 
-# 📚 API Quick Reference
-
-## Authentication
-
-```http
-POST /auth/login
-POST /auth/add-user
-GET  /auth/validate
-```
-
-## User APIs
-
-```http
-POST   /auth/user
-GET    /auth/user/{id}
-GET    /auth/users
-PUT    /auth/user/{id}
-DELETE /auth/user/{id}
-```
-
-## Account APIs
-
-```http
-POST   /api/accounts/create
-GET    /api/accounts/get/{id}
-GET    /api/accounts/get/all
-PUT    /api/accounts/update/{id}
-DELETE /api/accounts/delete/{id}
-```
-
-## Transaction APIs
-
-```http
-POST /transactions/create
-POST /transactions/transfer
-GET  /transactions/{id}
-GET  /transactions/account/{accountId}
-```
-
-## OTP APIs
-
-```http
-POST /api/otp/send
-POST /api/otp/verify
-```
-
----
-
-# ⚠ Error Response Format
-
-```json
-{
-  "success": false,
-  "message": "Resource not found",
-  "errors": [
-    "validation message"
-  ]
-}
-```
-
----
-
-# 📈 Highlights
-
-✅ Spring Boot Microservices
-
-✅ PostgreSQL Persistence
-
-✅ RabbitMQ Messaging
-
-✅ JWT Authentication
+✅ JWT Authentication (RS256)
 
 ✅ BCrypt Security
 
-✅ OTP Verification
+✅ OTP Verification (SMS + Email)
 
 ✅ KYC Document Management
 
 ✅ Saga-Based Transaction Rollback
 
 ✅ Role-Based Access Control
+
+✅ Docker Compose with Monitoring (Prometheus + Grafana)
+
+✅ IEEE Research Paper with LaTeX Manuscript
+
+✅ Automated Benchmarking Suite (JMeter + Statistical Analysis)
+
+✅ Chaos Engineering (5 Fault Injection Scenarios)
 
 ✅ Scalable Architecture
 
@@ -508,11 +369,16 @@ POST /api/otp/verify
 
 **Ayshi Shannidhya Panda**
 
+B.Tech. CSE, Silicon Institute of Technology, Sambalpur, Odisha, India
+
 GitHub:
 https://github.com/ayshishannidhya
 
+LinkedIn:
+https://www.linkedin.com/in/ayshishannidhya/
+
 Email:
-a.shannidhya@gmail.com
+asp45624@gmail.com
 
 ---
 
@@ -527,4 +393,4 @@ Unauthorized copying, modification, distribution, or commercial use is prohibite
 
 # ⭐ Neptune Bank
 
-A modern microservices-based banking platform designed for security, scalability, reliability, and enterprise-grade banking operations.
+A modern microservices-based banking platform designed for security, scalability, reliability, and enterprise-grade banking operations — with IEEE-quality research infrastructure for empirical performance evaluation.
