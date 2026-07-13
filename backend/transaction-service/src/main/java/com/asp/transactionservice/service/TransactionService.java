@@ -12,7 +12,7 @@ package com.asp.transactionservice.service;
  * Created on: 12-06-2026
  */
 
-import com.asp.transactionservice.client.AccountValidationClient;
+import com.asp.transactionservice.strategy.CommunicationStrategy;
 import com.asp.transactionservice.dto.FundTransferRequestDTO;
 import com.asp.transactionservice.dto.SourceOrDestinationRequestDto;
 import com.asp.transactionservice.dto.TransactionRequestDto;
@@ -28,6 +28,8 @@ import com.asp.transactionservice.repository.TransactionRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -43,8 +45,19 @@ import java.util.stream.Collectors;
 @Service
 public class TransactionService {
 
+    private static final Logger log = LoggerFactory.getLogger(TransactionService.class);
+
     private TransactionRepository transactionRepository;
-    private AccountValidationClient accountValidationClient;
+
+    /**
+     * The active communication strategy, injected by Spring based on
+     * the active profile (rest, rabbitmq, or kafka).
+     *
+     * <p>This is the core of the IEEE experiment — the same business
+     * logic executes with different communication paradigms by simply
+     * switching the Spring Profile.</p>
+     */
+    private CommunicationStrategy communicationStrategy;
 
     @Autowired
     public void setTransactionRepository(TransactionRepository transactionRepository) {
@@ -52,8 +65,9 @@ public class TransactionService {
     }
 
     @Autowired
-    public void setAccountValidationClient(AccountValidationClient accountValidationClient) {
-        this.accountValidationClient = accountValidationClient;
+    public void setCommunicationStrategy(CommunicationStrategy communicationStrategy) {
+        this.communicationStrategy = communicationStrategy;
+        log.info("TransactionService using communication strategy: {}", communicationStrategy.getStrategyName());
     }
 
     @Transactional
@@ -103,13 +117,13 @@ public class TransactionService {
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
 
-        if (!accountValidationClient.isAccountExist(dto.getSourceAccountNumber())) {
+        if (!communicationStrategy.validateAccount(dto.getSourceAccountNumber())) {
             response.put("status", "failed");
             response.put("message", "Source account not found: " + dto.getSourceAccountNumber());
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
 
-        if (!accountValidationClient.isAccountExist(dto.getDestinationAccountNumber())) {
+        if (!communicationStrategy.validateAccount(dto.getDestinationAccountNumber())) {
             response.put("status", "failed");
             response.put("message", "Destination account not found: " + dto.getDestinationAccountNumber());
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
@@ -133,7 +147,7 @@ public class TransactionService {
 
         BigDecimal transferAmount = new BigDecimal(dto.getAmount());
 
-        boolean debited = accountValidationClient.debitAccount(dto.getSourceAccountNumber(), transferAmount);
+        boolean debited = communicationStrategy.debitAccount(dto.getSourceAccountNumber(), transferAmount);
         if (!debited) {
             transaction.setTransactionStatus(TransactionStatus.FAILED_INSUFFICIENT_FUNDS);
             transactionRepository.save(transaction);
@@ -143,9 +157,9 @@ public class TransactionService {
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
 
-        boolean credited = accountValidationClient.creditAccount(dto.getDestinationAccountNumber(), transferAmount);
+        boolean credited = communicationStrategy.creditAccount(dto.getDestinationAccountNumber(), transferAmount);
         if (!credited) {
-            accountValidationClient.creditAccount(dto.getSourceAccountNumber(), transferAmount);
+            communicationStrategy.creditAccount(dto.getSourceAccountNumber(), transferAmount);
             transaction.setTransactionStatus(TransactionStatus.FAILED_TECHNICAL_ERROR);
             transactionRepository.save(transaction);
             response.put("status", "failed");

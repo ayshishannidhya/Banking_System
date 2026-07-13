@@ -58,7 +58,15 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     runtimeOnly 'org.postgresql:postgresql'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    implementation 'io.micrometer:micrometer-registry-cloudwatch2'
+
+    // === IEEE Research Dependencies ===
+    // Kafka (event listener for account operations)
+    implementation 'org.springframework.kafka:spring-kafka'
+    testImplementation 'org.springframework.kafka:spring-kafka-test'
+
+    // Micrometer + Prometheus
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+    // implementation 'io.micrometer:micrometer-registry-cloudwatch2'  // disabled for local experiments
 }
 dependencyManagement {
     imports {

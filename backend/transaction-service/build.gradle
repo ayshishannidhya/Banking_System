@@ -25,6 +25,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-amqp'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'  // WebClient for REST strategy
+    implementation 'org.springframework.boot:spring-boot-starter-aop'     // @Timed annotation support
 //    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -45,7 +47,15 @@ dependencies {
     testImplementation 'org.springframework.amqp:spring-rabbit-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
-    implementation 'io.micrometer:micrometer-registry-cloudwatch2'
+
+    // === IEEE Research Dependencies ===
+    // Kafka (event-driven communication strategy)
+    implementation 'org.springframework.kafka:spring-kafka'
+    testImplementation 'org.springframework.kafka:spring-kafka-test'
+
+    // Micrometer + Prometheus (replaces CloudWatch for local experiments)
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+    // implementation 'io.micrometer:micrometer-registry-cloudwatch2'  // disabled for local experiments
 }
 dependencyManagement {
     imports {

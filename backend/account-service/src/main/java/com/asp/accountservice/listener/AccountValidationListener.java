@@ -15,12 +15,14 @@ package com.asp.accountservice.listener;
 import com.asp.accountservice.service.AccountService;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.Map;
 
 @Service
+@Profile("rabbitmq")
 public class AccountValidationListener {
 
     private final AccountService accountService;

@@ -22,3 +22,25 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# === IEEE Research ===
+# JMeter binary (downloaded locally, ~90MB)
+Backend/tools/
+
+# Experiment results and analysis (generated data)
+Backend/benchmarks/results/
+Backend/benchmarks/analysis/
+
+# LaTeX build artifacts
+*.aux
+*.bbl
+*.blg
+*.out
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+*.toc
+
+# Gradle
+.gradle/
+build/

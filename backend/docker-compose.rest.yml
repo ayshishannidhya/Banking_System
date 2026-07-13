@@ -1,0 +1,21 @@
+# ==============================================================================
+# Docker Compose Override — REST Communication Mode (synchronous baseline)
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.rest.yml up -d
+# ==============================================================================
+
+services:
+
+  # ===========================
+  # SERVICE OVERRIDES — REST Profile (no message broker)
+  # ===========================
+  account-service:
+    environment:
+      SPRING_PROFILES_ACTIVE: rest
+
+  transaction-service:
+    environment:
+      SPRING_PROFILES_ACTIVE: rest
+
+  user-service:
+    environment:
+      SPRING_PROFILES_ACTIVE: rest

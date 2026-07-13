@@ -1,0 +1,339 @@
+# ==============================================================================
+# Neptune Bank — Docker Compose Base Configuration
+# Author: Ayshi Shannidhya Panda
+# Purpose: IEEE Research — Performance Evaluation of Event-Driven Microservices
+#
+# Usage:
+#   REST mode:     docker-compose -f docker-compose.yml -f docker-compose.rest.yml up -d
+#   RabbitMQ mode: docker-compose -f docker-compose.yml -f docker-compose.rabbitmq.yml up -d
+#   Kafka mode:    docker-compose -f docker-compose.yml -f docker-compose.kafka.yml up -d
+# ==============================================================================
+
+services:
+
+  # ===========================
+  # DATABASES
+  # ===========================
+  postgres-user:
+    image: postgres:16-alpine
+    container_name: neptune-postgres-user
+    environment:
+      POSTGRES_DB: UserDB
+      POSTGRES_USER: neptune
+      POSTGRES_PASSWORD: ankit
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata-user:/var/lib/postgresql/data
+    networks:
+      - neptune-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U neptune -d UserDB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-account:
+    image: postgres:16-alpine
+    container_name: neptune-postgres-account
+    environment:
+      POSTGRES_DB: AccountDB
+      POSTGRES_USER: neptune
+      POSTGRES_PASSWORD: ankit
+    ports:
+      - "5434:5432"
+    volumes:
+      - pgdata-account:/var/lib/postgresql/data
+    networks:
+      - neptune-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U neptune -d AccountDB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-transaction:
+    image: postgres:16-alpine
+    container_name: neptune-postgres-transaction
+    environment:
+      POSTGRES_DB: TransactionDB
+      POSTGRES_USER: neptune
+      POSTGRES_PASSWORD: ankit
+    ports:
+      - "5435:5432"
+    volumes:
+      - pgdata-transaction:/var/lib/postgresql/data
+    networks:
+      - neptune-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U neptune -d TransactionDB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-auth:
+    image: postgres:16-alpine
+    container_name: neptune-postgres-auth
+    environment:
+      POSTGRES_DB: AuthDB
+      POSTGRES_USER: neptune
+      POSTGRES_PASSWORD: ankit
+    ports:
+      - "5436:5432"
+    volumes:
+      - pgdata-auth:/var/lib/postgresql/data
+    networks:
+      - neptune-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U neptune -d AuthDB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-otp:
+    image: postgres:16-alpine
+    container_name: neptune-postgres-otp
+    environment:
+      POSTGRES_DB: OtpDB
+      POSTGRES_USER: neptune
+      POSTGRES_PASSWORD: ankit
+    ports:
+      - "5437:5432"
+    volumes:
+      - pgdata-otp:/var/lib/postgresql/data
+    networks:
+      - neptune-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U neptune -d OtpDB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-audit:
+    image: postgres:16-alpine
+    container_name: neptune-postgres-audit
+    environment:
+      POSTGRES_DB: AuditDB
+      POSTGRES_USER: neptune
+      POSTGRES_PASSWORD: ankit
+    ports:
+      - "5438:5432"
+    volumes:
+      - pgdata-audit:/var/lib/postgresql/data
+    networks:
+      - neptune-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U neptune -d AuditDB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ===========================
+  # MICROSERVICES
+  # ===========================
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: neptune-auth-service
+    ports:
+      - "8086:8086"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-auth:5432/AuthDB
+      SPRING_DATASOURCE_USERNAME: neptune
+      SPRING_DATASOURCE_PASSWORD: ankit
+      JAVA_OPTS: "-Xms256m -Xmx512m -XX:+UseG1GC -XX:MaxGCPauseMillis=200"
+    depends_on:
+      postgres-auth:
+        condition: service_healthy
+    networks:
+      - neptune-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8086/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    container_name: neptune-user-service
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-user:5432/UserDB
+      SPRING_DATASOURCE_USERNAME: neptune
+      SPRING_DATASOURCE_PASSWORD: ankit
+      JAVA_OPTS: "-Xms256m -Xmx512m -XX:+UseG1GC -XX:MaxGCPauseMillis=200"
+    depends_on:
+      postgres-user:
+        condition: service_healthy
+    networks:
+      - neptune-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  account-service:
+    build:
+      context: ./account-service
+      dockerfile: Dockerfile
+    container_name: neptune-account-service
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-account:5432/AccountDB
+      SPRING_DATASOURCE_USERNAME: neptune
+      SPRING_DATASOURCE_PASSWORD: ankit
+      JAVA_OPTS: "-Xms256m -Xmx512m -XX:+UseG1GC -XX:MaxGCPauseMillis=200"
+    depends_on:
+      postgres-account:
+        condition: service_healthy
+    networks:
+      - neptune-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  transaction-service:
+    build:
+      context: ./transaction-service
+      dockerfile: Dockerfile
+    container_name: neptune-transaction-service
+    ports:
+      - "8084:8084"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-transaction:5432/TransactionDB
+      SPRING_DATASOURCE_USERNAME: neptune
+      SPRING_DATASOURCE_PASSWORD: ankit
+      JAVA_OPTS: "-Xms256m -Xmx512m -XX:+UseG1GC -XX:MaxGCPauseMillis=200"
+    depends_on:
+      postgres-transaction:
+        condition: service_healthy
+    networks:
+      - neptune-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8084/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  otp-service:
+    build:
+      context: ./otp-service
+      dockerfile: Dockerfile
+    container_name: neptune-otp-service
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-otp:5432/OtpDB
+      SPRING_DATASOURCE_USERNAME: neptune
+      SPRING_DATASOURCE_PASSWORD: ankit
+      JAVA_OPTS: "-Xms256m -Xmx512m -XX:+UseG1GC -XX:MaxGCPauseMillis=200"
+    depends_on:
+      postgres-otp:
+        condition: service_healthy
+    networks:
+      - neptune-network
+
+  notification-service:
+    build:
+      context: ./notification-service
+      dockerfile: Dockerfile
+    container_name: neptune-notification-service
+    ports:
+      - "8087:8087"
+    environment:
+      JAVA_OPTS: "-Xms128m -Xmx256m -XX:+UseG1GC"
+    networks:
+      - neptune-network
+
+  audit-service:
+    build:
+      context: ./audit-service
+      dockerfile: Dockerfile
+    container_name: neptune-audit-service
+    ports:
+      - "8088:8088"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-audit:5432/AuditDB
+      SPRING_DATASOURCE_USERNAME: neptune
+      SPRING_DATASOURCE_PASSWORD: ankit
+      JAVA_OPTS: "-Xms128m -Xmx256m -XX:+UseG1GC"
+    depends_on:
+      postgres-audit:
+        condition: service_healthy
+    networks:
+      - neptune-network
+
+  # ===========================
+  # MONITORING
+  # ===========================
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    container_name: neptune-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.retention.time=30d'
+    networks:
+      - neptune-network
+
+  grafana:
+    image: grafana/grafana:10.4.0
+    container_name: neptune-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: neptune
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - neptune-network
+
+  # cAdvisor for container-level CPU/memory metrics
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    container_name: neptune-cadvisor
+    ports:
+      - "8089:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    networks:
+      - neptune-network
+
+# ===========================
+# VOLUMES
+# ===========================
+volumes:
+  pgdata-user:
+  pgdata-account:
+  pgdata-transaction:
+  pgdata-auth:
+  pgdata-otp:
+  pgdata-audit:
+  prometheus-data:
+  grafana-data:
+
+# ===========================
+# NETWORK
+# ===========================
+networks:
+  neptune-network:
+    driver: bridge

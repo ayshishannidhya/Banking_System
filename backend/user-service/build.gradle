@@ -40,7 +40,9 @@ dependencies {
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     runtimeOnly 'org.postgresql:postgresql'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    implementation 'io.micrometer:micrometer-registry-cloudwatch2'
+    // Micrometer + Prometheus (IEEE Research)
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+    // implementation 'io.micrometer:micrometer-registry-cloudwatch2'
 }
 dependencyManagement {
     imports {

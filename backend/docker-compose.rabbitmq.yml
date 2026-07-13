@@ -1,0 +1,70 @@
+# ==============================================================================
+# Docker Compose Override — RabbitMQ Communication Mode (existing baseline)
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.rabbitmq.yml up -d
+# ==============================================================================
+
+services:
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: neptune-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: neptune
+      RABBITMQ_DEFAULT_PASS: ankit
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - neptune-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # ===========================
+  # SERVICE OVERRIDES — RabbitMQ Profile
+  # ===========================
+  account-service:
+    environment:
+      SPRING_PROFILES_ACTIVE: rabbitmq
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: neptune
+      SPRING_RABBITMQ_PASSWORD: ankit
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres-account:
+        condition: service_healthy
+
+  transaction-service:
+    environment:
+      SPRING_PROFILES_ACTIVE: rabbitmq
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: neptune
+      SPRING_RABBITMQ_PASSWORD: ankit
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres-transaction:
+        condition: service_healthy
+
+  user-service:
+    environment:
+      SPRING_PROFILES_ACTIVE: rabbitmq
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: neptune
+      SPRING_RABBITMQ_PASSWORD: ankit
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres-user:
+        condition: service_healthy
+
+volumes:
+  rabbitmq-data:

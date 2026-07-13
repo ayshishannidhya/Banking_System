@@ -1,0 +1,123 @@
+# ==============================================================================
+# Docker Compose Override — Kafka Communication Mode
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.kafka.yml up -d
+# ==============================================================================
+
+services:
+
+  # ===========================
+  # KAFKA (KRaft mode — no ZooKeeper)
+  # ===========================
+  kafka:
+    image: apache/kafka:3.7.0
+    container_name: neptune-kafka
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      CLUSTER_ID: 'NeptuneBankResearchCluster01'
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    networks:
+      - neptune-network
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+
+  # Kafka topic initialization
+  kafka-init:
+    image: apache/kafka:3.7.0
+    container_name: neptune-kafka-init
+    depends_on:
+      kafka:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command: |
+      "
+      echo 'Creating Kafka topics for Neptune Bank...'
+      /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic account.validation --partitions 6 --replication-factor 1
+      /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic account.validation.reply --partitions 6 --replication-factor 1
+      /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic account.debit --partitions 6 --replication-factor 1
+      /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic account.debit.reply --partitions 6 --replication-factor 1
+      /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic account.credit --partitions 6 --replication-factor 1
+      /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic account.credit.reply --partitions 6 --replication-factor 1
+      /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic transaction.events --partitions 12 --replication-factor 1
+      /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic notification.events --partitions 3 --replication-factor 1
+      /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic audit.events --partitions 6 --replication-factor 1
+      echo 'Kafka topics created successfully.'
+      /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --list
+      "
+    networks:
+      - neptune-network
+
+  # Kafka JMX exporter for Prometheus
+  kafka-exporter:
+    image: danielqsj/kafka-exporter:v1.7.0
+    container_name: neptune-kafka-exporter
+    command:
+      - "--kafka.server=kafka:9092"
+    ports:
+      - "9308:9308"
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - neptune-network
+
+  # ===========================
+  # SERVICE OVERRIDES — Kafka Profile
+  # ===========================
+  account-service:
+    environment:
+      SPRING_PROFILES_ACTIVE: kafka
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres-account:
+        condition: service_healthy
+
+  transaction-service:
+    environment:
+      SPRING_PROFILES_ACTIVE: kafka
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres-transaction:
+        condition: service_healthy
+
+  notification-service:
+    environment:
+      SPRING_PROFILES_ACTIVE: kafka
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    depends_on:
+      kafka:
+        condition: service_healthy
+
+  audit-service:
+    environment:
+      SPRING_PROFILES_ACTIVE: kafka
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres-audit:
+        condition: service_healthy
+
+volumes:
+  kafka-data:
